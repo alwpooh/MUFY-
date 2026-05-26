@@ -61,10 +61,10 @@ THEMES = {
     },
     "City View": {
         "type": "image", 
-        # This direct URL pulls your exact chosen image safely every time
-        "value": "https://source.unsplash.com/lZXyGjsRnP0/1200x800", 
-        # Dark text color so you can read your tasks against the bright concrete buildings
-        "text": "#0F2D4A"
+        # Verified working direct CDN link for a bright concrete city layout
+        "value": "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1200&q=80", 
+        # Dark charcoal text so it's readable over the white/grey concrete buildings
+        "text": "#1A1A24"
     }
 }
 
@@ -241,7 +241,7 @@ with tab_completed:
         for idx, done_todo in enumerate(day_tasks["completed"]):
             col_bullet, col_text, col_delete = st.columns([0.08, 0.82, 0.1])
 
-            col_bullet.markdown("●") # Removed '###' layout stretching
+            col_bullet.markdown("●") 
             col_text.markdown(f"~~{done_todo}~~")
 
             stable_id = generate_stable_id(done_todo)
