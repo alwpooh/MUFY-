@@ -7,12 +7,18 @@ import json
 import os
 
 
+
+
 # --- PAGE SETUP ---
 st.set_page_config(page_title="Daily Planner", page_icon="📆", layout="centered")
 
 
+
+
 # --- DATA PERSISTENCE SETUP ---
 DATA_FILE = "todo_data.json"
+
+
 
 
 def load_data():
@@ -26,10 +32,14 @@ def load_data():
     return {}
 
 
+
+
 def save_data():
     """Saves the current session state to the JSON file."""
     with open(DATA_FILE, "w") as file:
         json.dump(st.session_state.todo_data, file, indent=4)
+
+
 
 
 def generate_stable_id(text):
@@ -37,9 +47,13 @@ def generate_stable_id(text):
     return hashlib.md5(text.encode('utf-8')).hexdigest()[:8]
 
 
+
+
 # Initialize data structure
 if "todo_data" not in st.session_state:
     st.session_state.todo_data = load_data()
+
+
 
 
 # Ensure a default settings key exists for personalization
@@ -50,6 +64,8 @@ if "settings" not in st.session_state.todo_data:
         "custom_text": "#0F2D4A",
         "animal": "🦊 Fox"        
     }
+
+
 
 
 # --- CONFIGURATION MAPS FOR THEMES, FONTS & ANIMALS ---
@@ -77,12 +93,16 @@ THEMES = {
 }
 
 
+
+
 FONTS = {
     "Default Sans": "sans-serif",
     "Modern Sans (Inter)": "'Inter', sans-serif",
     "Elegant Serif (Lora)": "'Lora', serif",
     "Minimal Code (Roboto Mono)": "'Roboto Mono', monospace"
 }
+
+
 
 
 ANIMALS = {
@@ -96,6 +116,8 @@ ANIMALS = {
 }
 
 
+
+
 ANIMAL_CLASSES = {
     "🦊 Fox": "anim-fox",
     "🐼 Panda": "anim-panda",
@@ -104,6 +126,8 @@ ANIMAL_CLASSES = {
     "🐰 Bunny": "anim-bunny",
     "🦁 Lion": "anim-lion"
 }
+
+
 
 
 def update_settings_callback():
@@ -117,15 +141,21 @@ def update_settings_callback():
     save_data()
 
 
+
+
 # --- SIDEBAR PERSONALIZATION CONTROLS ---
 st.sidebar.title("🎨 Personalize App")
 saved_settings = st.session_state.todo_data["settings"]
+
+
 
 
 saved_font = saved_settings.get("font", "Modern Sans (Inter)")
 if saved_font not in FONTS:
     saved_font = "Modern Sans (Inter)"
 font_index = list(FONTS.keys()).index(saved_font)
+
+
 
 
 selected_font = st.sidebar.selectbox(
@@ -137,10 +167,14 @@ selected_font = st.sidebar.selectbox(
 )
 
 
+
+
 saved_theme = saved_settings.get("theme", "Sea View")
 if saved_theme not in THEMES:
     saved_theme = "Sea View"
 theme_index = list(THEMES.keys()).index(saved_theme)
+
+
 
 
 selected_theme = st.sidebar.selectbox(
@@ -152,6 +186,8 @@ selected_theme = st.sidebar.selectbox(
 )
 
 
+
+
 theme_config = THEMES[selected_theme]
 if theme_config["type"] == "image":
     bg_style = f"background-image: url('{theme_config['value']}') !important; background-size: cover !important; background-position: center !important; background-attachment: fixed !important;"
@@ -159,18 +195,26 @@ else:
     bg_style = f"background-color: {theme_config['value']} !important;"
 
 
+
+
 default_text_color = saved_settings.get("custom_text", theme_config["text"])
 text_color = st.sidebar.color_picker("Text Color Override", default_text_color, key="sb_custom_text", on_change=update_settings_callback)
+
+
 
 
 st.sidebar.write("---")
 st.sidebar.subheader("🐾 Sidebar Companion")
 
 
+
+
 saved_animal = saved_settings.get("animal", "🦊 Fox")
 if saved_animal not in ANIMALS:
     saved_animal = "🦊 Fox"
 animal_index = list(ANIMALS.keys()).index(saved_animal)
+
+
 
 
 selected_animal = st.sidebar.selectbox(
@@ -180,6 +224,8 @@ selected_animal = st.sidebar.selectbox(
     key="sb_animal",
     on_change=update_settings_callback
 )
+
+
 
 
 if selected_animal != "None" and ANIMALS[selected_animal]:
@@ -195,7 +241,11 @@ if selected_animal != "None" and ANIMALS[selected_animal]:
     )
 
 
+
+
 font_family = FONTS[selected_font]
+
+
 
 
 # --- INJECT DYNAMIC CUSTOM CSS ---
@@ -204,9 +254,13 @@ custom_css = f"""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:wght@400;600&family=Roboto+Mono&display=swap');
 
 
+
+
 [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
     {bg_style}
 }}
+
+
 
 
 [data-testid="stSidebar"] {{
@@ -215,15 +269,21 @@ custom_css = f"""
 }}
 
 
+
+
 h1, h2, h3, h4, h5, h6, p, label, li, .stMarkdown, .stTabs [data-baseweb="tab"] p, .stCaption {{
     font-family: {font_family} !important;
     color: {text_color} !important;
 }}
 
 
+
+
 p, label, li, .stMarkdown p, .stTabs [data-baseweb="tab"] p, .stCaption {{
     font-size: 18px !important;
 }}
+
+
 
 
 [data-testid="stSidebarCollapseButton"] button {{
@@ -234,10 +294,14 @@ p, label, li, .stMarkdown p, .stTabs [data-baseweb="tab"] p, .stCaption {{
 }}
 
 
+
+
 [data-testid="stSidebarCollapseButton"] svg {{
     fill: {text_color} !important;
     color: {text_color} !important;
 }}
+
+
 
 
 /* --- CHARACTER ANIMATIONS --- */
@@ -245,20 +309,30 @@ p, label, li, .stMarkdown p, .stTabs [data-baseweb="tab"] p, .stCaption {{
 .anim-fox {{ animation: foxTilt 4s ease-in-out infinite; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.15)); }}
 
 
+
+
 @keyframes pandaSway {{ 0%, 100% {{ transform: translate(0, 0) rotate(0deg); }} 50% {{ transform: translate(2px, 2px) rotate(3deg) scaleY(0.95); }} }}
 .anim-panda {{ animation: pandaSway 5s ease-in-out infinite; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.15)); }}
+
+
 
 
 @keyframes catWiggle {{ 0%, 70%, 100% {{ transform: translate(0, 0) scale(1); }} 73% {{ transform: translate(-2px, 0) rotate(-3deg); }} 76% {{ transform: translate(2px, 0) rotate(3deg); }} 79% {{ transform: translate(-2px, 0) rotate(-3deg); }} 85% {{ transform: translateY(-12px) scaleY(1.05); }} }}
 .anim-cat {{ animation: catWiggle 4.5s ease-in-out infinite; transform-origin: bottom center; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.15)); }}
 
 
+
+
 @keyframes frogHop {{ 0%, 60%, 100% {{ transform: translateY(0) scale(1); }} 65% {{ transform: scaleY(0.75) scaleX(1.1); }} 70% {{ transform: translateY(-25px) scaleY(1.1) scaleX(0.9); }} 75% {{ transform: translateY(0) scaleY(0.85) scaleX(1.05); }} }}
 .anim-frog {{ animation: frogHop 3.5s ease-in-out infinite; transform-origin: bottom center; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.15)); }}
 
 
+
+
 @keyframes bunnyHop {{ 0%, 40%, 70%, 100% {{ transform: translateY(0); }} 10%, 30% {{ transform: translateY(-1px) scaleY(1.02); }} 20% {{ transform: translateY(1px); }} 45% {{ transform: scaleY(0.8); }} 52% {{ transform: translateY(-18px) rotate(5deg); }} 60% {{ transform: translateY(0) scaleY(0.9); }} }}
 .anim-bunny {{ animation: bunnyHop 4s ease-in-out infinite; transform-origin: bottom center; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.15)); }}
+
+
 
 
 @keyframes lionRoar {{ 0%, 70%, 100% {{ transform: scale(1) rotate(0); }} 75% {{ transform: scale(1.1) rotate(-2deg); }} 80%, 88% {{ transform: scale(1.15) translate(1px, -1px) rotate(2deg); }} 82%, 90% {{ transform: scale(1.15) translate(-1px, 1px) rotate(-2deg); }} 84% {{ transform: scale(1.15) translate(1px, 1px) rotate(1deg); }} 95% {{ transform: scale(1) rotate(0); }} }}
@@ -272,8 +346,16 @@ st.markdown(custom_css, unsafe_allow_html=True)
 
 
 
+
+
+
+
+
+
 # --- MAIN APPLICATION LOGIC ---
 st.title("📆 Daily Notion-Style Planner")
+
+
 
 
 # --- SECTION 1: TO-DO LIST AND DAY PLANNER ---
@@ -281,11 +363,17 @@ selected_date = st.date_input("Select a Date", date.today())
 date_key = str(selected_date)
 
 
+
+
 if date_key not in st.session_state.todo_data:
     st.session_state.todo_data[date_key] = {"active": [], "completed": []}
 
 
+
+
 day_tasks = st.session_state.todo_data[date_key]
+
+
 
 
 # Callback to add task and save
@@ -300,13 +388,19 @@ def add_task_callback():
     st.session_state[widget_key] = ""
 
 
+
+
 st.subheader(f"Tasks for {selected_date.strftime('%B %d, %Y')}")
+
+
 
 
 # --- PROGRESS BAR CALCULATIONS ---
 num_active = len(day_tasks["active"])
 num_completed = len(day_tasks["completed"])
 total_tasks = num_active + num_completed
+
+
 
 
 if total_tasks > 0:
@@ -318,7 +412,11 @@ else:
     st.caption("📊 Progress: **0%** (No tasks scheduled for today)")
 
 
+
+
 tab_active, tab_completed = st.tabs(["📂 Active Tasks", "📁 Completed Archive"])
+
+
 
 
 # Folder 1: Active Tasks
@@ -331,7 +429,11 @@ with tab_active:
     )
 
 
+
+
     st.write("")
+
+
 
 
     if not day_tasks["active"]:
@@ -343,9 +445,13 @@ with tab_active:
             col_bullet, col_text = st.columns([0.08, 0.92])
 
 
+
+
             stable_id = generate_stable_id(todo)
             if col_bullet.button("○", key=f"btn_act_{date_key}_{idx}_{stable_id}"):
                 to_complete = idx
+
+
 
 
             col_text.markdown(f" {todo}")
@@ -354,12 +460,14 @@ with tab_active:
             task_to_move = day_tasks["active"].pop(to_complete)
             day_tasks["completed"].append(task_to_move)
             save_data()  
-            
+           
             # Trigger confetti effect if the last active task was completed
             if len(day_tasks["active"]) == 0:
                 st.balloons()
-                
+               
             st.rerun()
+
+
 
 
 # Folder 2: Completed Tasks
@@ -373,13 +481,19 @@ with tab_completed:
             col_bullet, col_text, col_delete = st.columns([0.08, 0.82, 0.1])
 
 
+
+
             col_bullet.markdown("●")
             col_text.markdown(f"~~{done_todo}~~")
+
+
 
 
             stable_id = generate_stable_id(done_todo)
             if col_delete.button("🗑️", key=f"btn_del_{date_key}_{idx}_{stable_id}"):
                 to_delete = idx
+
+
 
 
         if to_delete is not None:
@@ -390,9 +504,15 @@ with tab_completed:
 
 
 
+
+
+
+
 # --- SECTION 2: STICKY NOTES INTERACTIVE DEDICATED WORKSPACE ---
 st.write("---")
 st.write("##### 📌 Interactive Scratchpad Board")
+
+
 
 
 # Self-contained Canvas App that renders safely inside a designated box height
@@ -440,6 +560,8 @@ body {
 .yellow-btn { background: #FEF08A; color: #713F12; border: 1px solid #FDE047; }
 .blue-btn { background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
 .pink-btn { background: #FCE7F3; color: #9D174D; border: 1px solid #FBCFE8; }
+
+
 
 
 .sticky-note {
@@ -509,12 +631,18 @@ body {
 </div>
 
 
+
+
 <script>
 const canvas = document.getElementById('boardCanvas');
 
 
+
+
 // Pull layout storage safely from the frame domain
 let notes = JSON.parse(localStorage.getItem('embedded_sticky_notes') || '[]');
+
+
 
 
 const themeConfigs = {
@@ -524,9 +652,13 @@ const themeConfigs = {
 };
 
 
+
+
 function saveNotesToStorage() {
     localStorage.setItem('embedded_sticky_notes', JSON.stringify(notes));
 }
+
+
 
 
 function renderSingleNote(note) {
@@ -572,6 +704,8 @@ function renderSingleNote(note) {
     };
 
 
+
+
     // Card background clicked triggers internal box autofocus perfectly
     noteDiv.onclick = function(e) {
         if(e.target !== header && e.target !== closeBtn) {
@@ -596,9 +730,11 @@ function renderSingleNote(note) {
         noteDiv.style.zIndex = "999";
 
 
+
+
         let shiftX = e.clientX - noteDiv.getBoundingClientRect().left;
         let shiftY = e.clientY - noteDiv.getBoundingClientRect().top;
-        
+       
         function moveAt(clientX, clientY) {
             let targetX = clientX - canvas.getBoundingClientRect().left - shiftX;
             let targetY = clientY - canvas.getBoundingClientRect().top - shiftY;
@@ -633,6 +769,8 @@ function renderSingleNote(note) {
 }
 
 
+
+
 function addNote(color) {
     const stackingOffset = (notes.length * 20) % 160;
     const newNote = {
@@ -650,6 +788,8 @@ function addNote(color) {
 }
 
 
+
+
 // Initial hydration build frame loop execution block
 notes.forEach(renderSingleNote);
 </script>
@@ -658,5 +798,9 @@ notes.forEach(renderSingleNote);
 """
 
 
+
+
 # Render the self-contained interactive board safely below the planner list
 components.html(scratchpad_canvas_html, height=450)
+
+

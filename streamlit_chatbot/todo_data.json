@@ -10,10 +10,19 @@
         "completed": []
     },
     "2026-05-27": {
-        "active": [],
+        "active": [
+            "complete tasks"
+        ],
         "completed": [
             "do laundry",
             "complete homework"
         ]
-    }
+    },
+    "sticky_notes": [
+        {
+            "id": "2026-05-27_2bc12f9f",
+            "color": "yellow",
+            "text": ""
+        }
+    ]
 }
