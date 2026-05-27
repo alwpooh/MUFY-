@@ -1,10 +1,14 @@
 {
     "settings": {
-        "theme": "Light Brown",
+        "theme": "Default",
         "font": "Default Sans",
-        "custom_text": "#0F2D4A"
+        "custom_text": "#ffffff"
     },
     "2026-05-26": {
+        "active": [],
+        "completed": []
+    },
+    "2026-05-27": {
         "active": [],
         "completed": []
     }

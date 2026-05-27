@@ -44,25 +44,25 @@ if "settings" not in st.session_state.todo_data:
 
 # --- CONFIGURATION MAPS FOR THEMES & FONTS ---
 THEMES = {
-    "Light Brown": {
-        "type": "color",
-        "value": "#D2B48C",
+    "Default": {
+        "type": "image",
+        "value": "https://images.unsplash.com/photo-1764072566129-f3aa9ff43c36?auto=format&fit=crop&w=2400&q=1600",
         "text": "#4A3525"
     },
     "Sea View": {
         "type": "image",
-        "value": "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1200&q=80",
+        "value": "https://images.unsplash.com/photo-1610532693607-61c8d3b8fded?auto=format&fit=crop&w=2400&q=1600",
         "text": "#0F2D4A"
     },
     "Mountains": {
         "type": "image", 
-        "value": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", 
+        "value": "https://images.unsplash.com/photo-1546587348-d12660c30c50?auto=format&fit=crop&w=2400&q=1600", 
         "text": "#1A2E1A"
     },
     "City View": {
         "type": "image", 
         # Verified working direct CDN link for a bright concrete city layout
-        "value": "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1200&q=80", 
+        "value": "https://images.unsplash.com/photo-1506606401543-2e73709cebb4?auto=format&fit=crop&w=2400&q=1600", 
         # Dark charcoal text so it's readable over the white/grey concrete buildings
         "text": "#1A1A24"
     }
