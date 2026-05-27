@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    background: transparent;
+}
+.board-container {
+    width: 100%;
+    height: 440px;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+    border-radius: 16px;
+    box-shadow: inset 0 4px 20px rgba(0,0,0,0.05);
+}
+.toolbar {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+}
+.note-btn {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.1s ease;
+}
+.note-btn:active { transform: scale(0.95); }
+.yellow-btn { background: #FEF08A; color: #713F12; border: 1px solid #FDE047; }
+.blue-btn { background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
+.pink-btn { background: #FCE7F3; color: #9D174D; border: 1px solid #FBCFE8; }
+
+.sticky-note {
+    position: absolute;
+    border-radius: 10px;
+    box-shadow: 3px 6px 15px rgba(0,0,0,0.14);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: box-shadow 0.2s ease;
+    
+    /* Native Handle Resizing Adjustments */
+    resize: both; 
+    overflow: hidden;
+    min-width: 150px;
+    min-height: 110px;
+    max-width: 450px;
+    max-height: 360px;
+    box-sizing: border-box;
+}
+.sticky-note:focus-within {
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+}
+.note-header {
+    height: 26px;
+    cursor: move;
+    background: rgba(0,0,0,0.04);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    user-select: none;
+    flex-shrink: 0;
+}
+.note-close {
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+.note-close:hover { opacity: 1; }
+.note-body {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none; 
+    background: transparent;
+    padding: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.4;
+}
+</style>
+</head>
+<body>
+<div class="board-container" id="boardCanvas">
+    <div class="toolbar">
+        <button class="note-btn yellow-btn" onclick="addNote('yellow')">+ 🟡 Yellow Note</button>
+        <button class="note-btn blue-btn" onclick="addNote('blue')">+ 🔵 Blue Note</button>
+        <button class="note-btn pink-btn" onclick="addNote('pink')">+ 🌸 Pink Note</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('boardCanvas');
+let notes = [];
+let initialized = false;
+
+const themeConfigs = {
+    yellow: { bg: '#FEF08A', text: '#713F12' },
+    blue: { bg: '#E0F2FE', text: '#0369A1' },
+    pink: { bg: '#FCE7F3', text: '#9D174D' }
+};
+
+// Dispatches data updates directly up to Streamlit's Python layer
+function sendStateToPython() {
+    window.parent.postMessage({
+        type: "streamlit:setComponentValue",
+        value: notes
+    }, "*");
+}
+
+function renderSingleNote(note) {
+    const config = themeConfigs[note.color];
+    const noteDiv = document.createElement('div');
+    noteDiv.className = 'sticky-note';
+    noteDiv.id = note.id;
+    noteDiv.style.backgroundColor = config.bg;
+    noteDiv.style.left = note.x + 'px';
+    noteDiv.style.top = note.y + 'px';
+    noteDiv.style.width = (note.w || 190) + 'px';
+    noteDiv.style.height = (note.h || 140) + 'px';
+    
+    const header = document.createElement('div');
+    header.className = 'note-header';
+    header.style.color = config.text;
+    header.innerHTML = '<span>📌 Drag Handle</span>';
+    
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'note-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = function(e) {
+        e.stopPropagation();
+        notes = notes.filter(n => n.id !== note.id);
+        sendStateToPython();
+        noteDiv.remove();
+    };
+    header.appendChild(closeBtn);
+    
+    const textarea = document.createElement('textarea');
+    textarea.className = 'note-body';
+    textarea.style.color = config.text;
+    textarea.placeholder = 'Click here to write notes...';
+    textarea.value = note.text || '';
+    
+    // Debounced keystroke recording prevents canvas freezing while typing
+    let typingTimer;
+    textarea.oninput = function() {
+        note.text = textarea.value;
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(sendStateToPython, 400); 
+    };
+
+    noteDiv.onclick = function(e) {
+        if(e.target !== header && e.target !== closeBtn) {
+            textarea.focus();
+        }
+    };
+    
+    // Debounced dimension monitoring prevents save loops during a live dragging resize
+    let resizeTimer;
+    const resizeObserver = new ResizeObserver(entries => {
+        if (!initialized) return;
+        let dimensionsChanged = false;
+        if (noteDiv.offsetWidth !== note.w || noteDiv.offsetHeight !== note.h) {
+            note.w = noteDiv.offsetWidth;
+            note.h = noteDiv.offsetHeight;
+            dimensionsChanged = true;
+        }
+        if (dimensionsChanged) {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(sendStateToPython, 500);
+        }
+    });
+    resizeObserver.observe(noteDiv);
+    
+    header.onmousedown = function(e) {
+        document.querySelectorAll('.sticky-note').forEach(n => n.style.zIndex = "100");
+        noteDiv.style.zIndex = "999";
+
+        let shiftX = e.clientX - noteDiv.getBoundingClientRect().left;
+        let shiftY = e.clientY - noteDiv.getBoundingClientRect().top;
+        
+        function moveAt(clientX, clientY) {
+            let targetX = clientX - canvas.getBoundingClientRect().left - shiftX;
+            let targetY = clientY - canvas.getBoundingClientRect().top - shiftY;
+            
+            if (targetX < 4) targetX = 4;
+            if (targetY < 55) targetY = 55; 
+            if (targetX > canvas.clientWidth - noteDiv.offsetWidth) targetX = canvas.clientWidth - noteDiv.offsetWidth;
+            if (targetY > canvas.clientHeight - noteDiv.offsetHeight) targetY = canvas.clientHeight - noteDiv.offsetHeight;
+            
+            noteDiv.style.left = targetX + 'px';
+            noteDiv.style.top = targetY + 'px';
+            note.x = targetX;
+            note.y = targetY;
+        }
+        
+        function onMouseMove(event) {
+            moveAt(event.clientX, event.clientY);
+        }
+        
+        document.addEventListener('mousemove', onMouseMove);
+        
+        // State updates python exclusively when user releases mouse click
+        document.onmouseup = function() {
+            document.removeEventListener('mousemove', onMouseMove);
+            sendStateToPython(); 
+            document.onmouseup = null;
+        };
+    };
+    
+    noteDiv.appendChild(header);
+    noteDiv.appendChild(textarea);
+    canvas.appendChild(noteDiv);
+}
+
+function addNote(color) {
+    const stackingOffset = (notes.length * 20) % 160;
+    const newNote = {
+        id: 'note_' + Date.now(),
+        color: color,
+        text: '',
+        x: 30 + stackingOffset,
+        y: 80 + stackingOffset,
+        w: 190,
+        h: 140
+    };
+    notes.push(newNote);
+    sendStateToPython();
+    renderSingleNote(newNote);
+}
+
+// Subscribes to backend changes driven by Streamlit
+window.addEventListener("message", (event) => {
+    if (event.data.type === "streamlit:render") {
+        const args = event.data.args;
+        if (!initialized) {
+            notes = args.notes || [];
+            notes.forEach(renderSingleNote);
+            initialized = true;
+            window.parent.postMessage({type: "streamlit:setFrameHeight", height: 460}, "*");
+        }
+    }
+});
+
+// Broadcast component readiness status loop
+window.parent.postMessage({type: "streamlit:componentReady", version: 1}, "*");
+</script>
+</body>
+</html>

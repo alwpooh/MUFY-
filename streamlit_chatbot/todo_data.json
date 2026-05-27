@@ -2,15 +2,18 @@
     "settings": {
         "theme": "Default",
         "font": "Default Sans",
-        "custom_text": "#ffffff",
-        "animal": "\ud83e\udd81 Lion"
+        "custom_text": "#f2eded",
+        "animal": "\ud83e\udd8a Fox"
     },
     "2026-05-26": {
         "active": [],
         "completed": []
     },
     "2026-05-27": {
-        "active": [],
+        "active": [
+            "do laundry",
+            "complete homework"
+        ],
         "completed": []
     }
 }
